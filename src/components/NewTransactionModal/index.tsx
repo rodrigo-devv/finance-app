@@ -10,11 +10,12 @@ import { ArrowCircleDown, ArrowCircleUp, X } from 'phosphor-react'
 import * as z from 'zod'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { api } from '../../lib/axios'
+import { TransactionsContext } from '../../contexts/TransactionsContext'
+import { useContext } from 'react'
 
 const newTransactionSchema = z.object({
   description: z.string(),
-  value: z.number().positive(),
+  price: z.number().positive(),
   category: z.string(),
   type: z.enum(['income', 'outcome']),
 })
@@ -22,6 +23,8 @@ const newTransactionSchema = z.object({
 type NewTransactionFormInputs = z.infer<typeof newTransactionSchema>
 
 export function NewTransactionModal() {
+  const { createTransaction } = useContext(TransactionsContext)
+
   const {
     control, // If the input not a cotrolled
     register,
@@ -36,13 +39,13 @@ export function NewTransactionModal() {
   })
 
   async function handleCreateNewTransaction(data: NewTransactionFormInputs) {
-    const { description, value, category, type } = data
-    await api.post('transactions', {
+    const { description, price, category, type } = data
+
+    await createTransaction({
       description,
-      price: value,
+      price,
       category,
       type,
-      createdAt: new Date(),
     })
 
     reset()
@@ -67,7 +70,7 @@ export function NewTransactionModal() {
             type="number"
             placeholder="Value"
             required
-            {...register('value', { valueAsNumber: true })}
+            {...register('price', { valueAsNumber: true })}
           />
           <input
             type="text"
